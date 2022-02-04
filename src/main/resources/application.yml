@@ -1,0 +1,13 @@
+cnf:
+  telegram:
+    botName: deal_notice_bot
+    apiKey: 5132246146:AAEKBsAtrAVzj_RrXGLTjUbljQS442g1wHY
+  crawling:
+    targets: quasarzon
+    detail:
+      quasarzon:
+        host: https://quasarzone.com
+        path: /bbs/qb_tsy
+        select-row: table tbody tr div[class='market-info-list']
+        select-title:
+        select-price:
