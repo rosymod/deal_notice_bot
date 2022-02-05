@@ -1,12 +1,40 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:2.10.1'
+	}
+}
+
 plugins {
 	id 'org.springframework.boot' version '2.6.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'org.hidetake.ssh' version '2.2.0'
+}
+
+ext {
+	ver = [
+			gradle: '7.3.2',
+			application: '0.0.1',
+			java: '1.8',
+			mybatis_starter: '2.2.0',
+			jdbc_mariadb: '2.7.4',
+			lombok: '1.18.22',
+			inject: '1',
+			commons_io:'2.11.0',
+			springfox: '3.0.0',
+			//jjwt: '0.9.1'
+			jjwt: '0.11.2',
+			//slf4j: '1.7.32'
+			commons_lang3:'3.12.0',
+	]
 }
 
 group = 'com.kst.bot'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+version = ver.application
+sourceCompatibility = ver.java
 
 repositories {
 	mavenCentral()
@@ -17,6 +45,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.telegram:telegrambots:5.7.1'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.0'
+	implementation'org.mariadb.jdbc:mariadb-java-client:2.7.4'
 	implementation 'javax.inject:javax.inject:1'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
 	compileOnly 'org.projectlombok:lombok:1.18.22'
@@ -25,10 +55,53 @@ dependencies {
 
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
 }
 
 bootRun {
 	systemProperties System.properties
+}
+
+
+remotes {
+	publicServer {
+		host = project.properties["publicHost"]
+		port = project.properties["publicPort"].toInteger()
+		user = project.properties["publicUser"]
+		password = project.properties["publicPassword"]
+		knownHosts = allowAnyHosts //알 수 없는 호스트라도 접속 가능
+	}
+}
+
+
+
+task deploy {
+	doFirst {
+
+	}
+
+	doLast {
+		ssh.run {
+			session(remotes.publicServer) {
+				println "[0] deal-notice-bot 서비스 shutdown"
+				execute '/var/services/homes/sungtae/work/deal-notice-bot/bin/shutdown.sh'
+				execute 'sleep 3'
+				println "[0] deal-notice-bot 서비스 shutdown 완료"
+
+				println "[1] 기존 파일 삭제 시작"
+				execute 'rm -rf /var/services/homes/sungtae/work/deal-notice-bot/DEAL_NOTICE_BOT.jar'
+				println "[1] 기존 파일 삭제 완료"
+
+				println "[2] 서버 파일 전송 시작"
+				put from: "build/libs/DEAL_NOTICE_BOT-"+ver.application +".jar", into: project.properties["publicDir"]
+				execute 'mv /var/services/homes/sungtae/work/deal-notice-bot/DEAL_NOTICE_BOT-'+ver.application +'.jar /var/services/homes/sungtae/work/deal-notice-bot/DEAL_NOTICE_BOT.jar'
+				println "[2] 서버 파일 전송 완료"
+
+				println "[3] deal-notice-bot 서비스 start 시작"
+				execute '/var/services/homes/sungtae/work/deal-notice-bot/bin/startup.sh'
+				println "[3] deal-notice-bot 서비스 start 완료"
+			}
+		}
+	}
 }

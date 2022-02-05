@@ -1,13 +1,44 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /DEAL.NOTICE
+    session:
+      timeout: 30m
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+spring:
+  application:
+    name: DEAL.NOTICE
+  messages:
+    encoding: UTF-8
+  profiles:
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: NULL
 cnf:
   telegram:
+    isUse: true
     botName: deal_notice_bot
-    apiKey: 5132246146:AAEKBsAtrAVzj_RrXGLTjUbljQS442g1wHY
+    apiKey:
   crawling:
-    targets: quasarzon
+    targets: quasarzon,clien,ruliweb
     detail:
       quasarzon:
+        name: 퀘이사존
         host: https://quasarzone.com
         path: /bbs/qb_tsy
-        select-row: table tbody tr div[class='market-info-list']
-        select-title:
-        select-price:
+        #select-row: table tbody tr div[class='market-info-list']
+      clien:
+        name: 클리앙
+        host: https://www.clien.net
+        path: /service/board/jirum
+        #select-row: table tbody tr div[class='market-info-list']
+      ruliweb:
+        name: 루리웹
+        host: https://bbs.ruliweb.com
+        path: /market/board/1020
+        #select-row: table tbody tr div[class='market-info-list']

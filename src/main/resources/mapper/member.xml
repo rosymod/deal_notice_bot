@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kst.bot.dealnotice.dao.MemberDao">
+
+    <insert id="addMember" parameterType="com.kst.bot.dealnotice.dto.MemberDto">
+        INSERT INTO `member`
+            (chat_id, last_name, first_name, lang_cd, insert_datetime)
+        VALUES
+            (#{chatId,jdbcType=VARCHAR},#{lastName,jdbcType=VARCHAR}, #{firstName,jdbcType=VARCHAR}, #{langCd,jdbcType=VARCHAR}, current_timestamp())
+
+    </insert>
+    <update id="editMember" parameterType="com.kst.bot.dealnotice.dto.MemberDto">
+        UPDATE `member`
+        <set>
+            <if test="keyword != null and keyword != ''">
+                keyword=#{keyword, jdbcType=VARCHAR},
+            </if>
+            <if test="langCd != null and langCd != ''">
+                lang_cd=#{langCd, jdbcType=VARCHAR},
+            </if>
+            <if test="useYn != null and useYn != ''">
+                use_yn=#{useYn, jdbcType=VARCHAR},
+            </if>
+            update_datetime=current_timestamp()
+        </set>
+        WHERE idx=#{idx,jdbcType=INTEGER}
+    </update>
+
+    <select id="getMember" parameterType="com.kst.bot.dealnotice.dto.MemberDto" resultType="com.kst.bot.dealnotice.dto.MemberDto">
+        SELECT      idx, chat_id, keyword, last_name, first_name, lang_cd, insert_datetime, update_datetime
+        FROM        `member`
+        WHERE       chat_id=#{chatId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getNoticeMembers" resultType="com.kst.bot.dealnotice.dto.MemberDto">
+        SELECT      idx, chat_id, keyword, last_name, first_name, lang_cd, insert_datetime, update_datetime
+        FROM        `member`
+        WHERE       use_yn='Y'
+        AND         keyword is not null
+    </select>
+</mapper>

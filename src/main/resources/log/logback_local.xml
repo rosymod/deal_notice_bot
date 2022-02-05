@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+	<property name="LOG_HOME" value="${logger.home}"></property>
+	<property name="LOG_LVL" value="${logger.level}" />
+	<property name="LOG_PATTERN" value="%d %-5p %c{0} %L - %m%n"/>
+
+	<!-- ********************************* -->
+	<!-- console log -->
+	<!-- ********************************* -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder><pattern>${LOG_PATTERN}</pattern></encoder>
+	</appender>
+
+	<!-- ********************************* -->
+	<!-- application log appender -->
+	<!-- ********************************* -->
+	<appender name="LOG_FILE_COMMON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<Pattern>${LOG_PATTERN}</Pattern>
+		</encoder>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>${LOG_PATTERN}</Pattern>
+		</layout>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/%d{yyyyMMddHH}.%i.log</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+	</appender>
+
+	<logger name="org.springframework" level="${LOG_LVL}"/>
+	<logger name="org.mybatis" level="${LOG_LVL}"/>
+	<logger name="org.apache.ibatis" level="${LOG_LVL}"/>
+	<logger name="jdbc.sqlonly" level="${LOG_LVL}"/>
+	<logger name="jdbc.sqltiming" level="${LOG_LVL}"/>
+
+	<root level="${LOG_LVL}">
+<!--		<appender-ref ref="LOG_FILE_COMMON" />-->
+		<appender-ref ref="CONSOLE"/>
+	</root>
+</configuration>

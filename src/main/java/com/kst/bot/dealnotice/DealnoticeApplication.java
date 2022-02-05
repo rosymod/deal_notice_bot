@@ -1,14 +1,13 @@
 package com.kst.bot.dealnotice;
 
-import com.kst.bot.dealnotice.handler.MessageHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
+@EnableScheduling
 @SpringBootApplication
 public class DealnoticeApplication {
 

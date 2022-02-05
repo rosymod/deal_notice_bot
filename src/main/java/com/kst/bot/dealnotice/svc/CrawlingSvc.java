@@ -31,18 +31,22 @@ public class CrawlingSvc {
         List<DealInfo> dealList = new ArrayList<>();
         String url;
         for(String target : targets){
-            url = environment.getProperty(String.format("cnf.crawling.detail.%s.host",target)) + environment.getProperty(String.format("cnf.crawling.detail.%s.path",target));
-            try {
-                Document document = Jsoup.connect(url).get();
-                dealList.addAll(makeDealInfo(target,document));
-                //log.info("getList - {}",String.valueOf(document));
-            } catch (IOException e) {
-                e.printStackTrace();
-                log.info("getList - exception {}",e.getMessage());
+            try{
+                url = environment.getProperty(String.format("cnf.crawling.detail.%s.host",target)) + environment.getProperty(String.format("cnf.crawling.detail.%s.path",target));
+                try {
+                    Document document = Jsoup.connect(url).get();
+                    dealList.addAll(makeDealInfo(target,document));
+                    //log.info("getList - {}",String.valueOf(document));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    log.info("getList - exception {}",e.getMessage());
+                }
+            }catch(Exception e){
+                log.error("getList - exception target {}, message {}",target, e.getMessage());
             }
         }
         if(dealList.size() > 0 && keyword != null && keyword.length > 0){
-            String matchStr = ".*"+String.join(".*|.*",keyword)+".*";// ".*a.*|.*b.*";
+            String matchStr = ".*(?i)"+String.join(".*|.*(?i)",keyword)+".*";// ".*a.*|.*b.*";
             dealList = dealList.stream().filter(deal -> deal.getTitle().matches(matchStr)).collect(Collectors.toList());
         }
         return dealList;
@@ -50,9 +54,10 @@ public class CrawlingSvc {
 
     private List<DealInfo> makeDealInfo(String type, Document document){
         List<DealInfo> list = new ArrayList<>();
+        Elements elements = null;
         switch(type){
             case "quasarzon":
-                Elements elements = document.select("table tbody tr div[class='market-info-list']");
+                elements = document.select("table tbody tr div[class='market-info-list']");
                 for(Element element : elements){
                     if(!"종료".equals(element.select("p[class='tit'] span").first().text())){
                         list.add(DealInfo.builder()
@@ -63,6 +68,32 @@ public class CrawlingSvc {
                                 .time(element.select("div[class='market-info-sub'] span[class='date']").first().text().trim())
                                 .build());
                     }
+                }
+                break;
+            case "clien":
+                elements = document.select("div[class='contents_jirum'] div[class='list_item symph_row jirum']");
+                for(Element element : elements){
+//                    if(!"종료".equals(element.select("p[class='tit'] span").first().text())){
+                        list.add(DealInfo.builder()
+                                .type(type)
+                                .title(element.select("span[class='list_subject']").first().attr("title"))
+                                .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
+                                .time(element.select("span[class='timestamp']").first().text().trim())
+                                .build());
+//                    }
+                }
+                break;
+            case "ruliweb":
+                elements = document.select("table tbody tr");
+                for(Element element : elements){
+//                    if(!"종료".equals(element.select("p[class='tit'] span").first().text())){
+                    list.add(DealInfo.builder()
+                            .type(type)
+                            .title(element.select("td[class='subject'] a[class='deco']").first().text())
+                            .link(element.select("td[class='subject'] a[class='deco']").attr("href"))
+                            .time(element.select("td[class='time']").first().text().trim())
+                            .build());
+//                    }
                 }
                 break;
             default:

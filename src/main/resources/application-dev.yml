@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3307/deal_notice?serverTimezone=UTC&characterEncoding=utf8&allowMultiQueries=true
+    hikari:
+      username: sungtae
+      password:
+      connection-timeout: 3000
+      validation-timeout: 3000
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-test-query: SELECT 1
+logging:
+  config: classpath:log/logback.xml
