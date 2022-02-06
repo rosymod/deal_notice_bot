@@ -30,7 +30,7 @@ public class NoticeSvc {
     @Inject
     private MessageHandler messageHandler;
 
-    private final String messagePrifix = "====== 새글알림 ======\n알림대상 : %s\n";
+    private final String messagePrifix = "========= 새글알림 ========="; //알림대상 : %s\n";
 
     @Scheduled(fixedDelay = 60000)
     public void noticeSchedule(){
@@ -42,7 +42,7 @@ public class NoticeSvc {
                 try{
                     keywords = member.getKeyword().split(",");
                     StringBuilder sb = new StringBuilder();
-                    sb.append(String.format(messagePrifix,member.getKeyword()));
+                    sb.append(String.format(messagePrifix,member. getKeyword()));
                     List<DealInfo> dealList = crawlingSvc.getList(keywords);
                     List<NoticeHistoryDto> historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(dealList).build());
 

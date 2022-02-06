@@ -178,9 +178,9 @@ public class MessageHandler extends TelegramLongPollingBot {
                     if(list == null || list.size() == 0){
                         sb.append("검색 결과가 없습니다.");
                     }else{
-                        sb.append("======= 검색어 [ ");
+                        sb.append("========= 검색어 [ ");
                         sb.append(value);
-                        sb.append(" ] =======");
+                        sb.append(" ] =========");
                         appendTextDealList(list, sb);
                     }
                 }
@@ -191,7 +191,7 @@ public class MessageHandler extends TelegramLongPollingBot {
                 if(list == null || list.size() == 0){
                     sb.append("조회 결과가 없습니다.");
                 }else{
-                    sb.append("======= 전체조회 =======");
+                    sb.append("========= 전체조회 =========");
                     appendTextDealList(list, sb);
                 }
                 break;
