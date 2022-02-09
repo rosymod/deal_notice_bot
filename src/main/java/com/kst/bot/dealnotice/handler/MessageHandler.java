@@ -212,21 +212,43 @@ public class MessageHandler extends TelegramLongPollingBot {
 
     public void appendTextDealList(List<DealInfo> dealList, StringBuilder sb){
         sb.append("\n\n");
+        int hiddenCnt = 0;
+        StringBuilder temp;
         for(DealInfo dealInfo : dealList){
-            sb.append("<< ");
-            sb.append(environment.getProperty(String.format("cnf.crawling.detail.%s.name",dealInfo.getType())));
-            sb.append(" >> ");
-            sb.append(dealInfo.getTitle());
-            sb.append("\n");
-            if(StringUtils.hasText(dealInfo.getPrice())){
-                sb.append("- ￦");
-                sb.append(dealInfo.getPrice());
-                sb.append(" | ");
+            if(hiddenCnt > 0) {
+                hiddenCnt++;
+            }else{
+                temp = new StringBuilder();
+                temp.append("<< ");
+                temp.append(environment.getProperty(String.format("cnf.crawling.detail.%s.name",dealInfo.getType())));
+                temp.append(" >> ");
+                temp.append(
+                        dealInfo.getTitle() != null && dealInfo.getTitle().length() > 50
+                                ? dealInfo.getTitle().substring(0,46) + "..."
+                                : dealInfo.getTitle());
+                temp.append("\n");
+                if(StringUtils.hasText(dealInfo.getPrice())){
+                    temp.append("- ￦");
+                    temp.append(dealInfo.getPrice());
+                    temp.append(" | ");
+                }
+                temp.append(dealInfo.getTime());
+                temp.append("\n");
+                temp.append(dealInfo.getLink());
+                temp.append("\n");
+
+                if(sb.length() + temp.length() >= 4000){
+                    hiddenCnt++;
+                }else{
+                    sb.append(temp);
+                }
             }
-            sb.append(dealInfo.getTime());
-            sb.append("\n");
-            sb.append(dealInfo.getLink());
-            sb.append("\n");
+        }
+
+        if(hiddenCnt > 0){
+            sb.append("\n###### 메시지 제한으로 노출하지 못한 컨텐츠 : ");
+            sb.append(hiddenCnt);
+            sb.append(" ######\n\n");
         }
         //return sb;
     }

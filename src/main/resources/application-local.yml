@@ -12,3 +12,6 @@ spring:
       connection-test-query: SELECT 1
 logging:
   config: classpath:log/logback_local.xml
+cnf:
+  telegram:
+    isUse: false

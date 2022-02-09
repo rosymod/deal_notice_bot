@@ -21,7 +21,6 @@ mybatis:
     jdbc-type-for-null: NULL
 cnf:
   telegram:
-    isUse: true
     botName: deal_notice_bot
     apiKey:
   crawling:
