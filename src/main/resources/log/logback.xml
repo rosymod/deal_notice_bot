@@ -23,11 +23,11 @@
 			<Pattern>${LOG_PATTERN}</Pattern>
 		</layout>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/%d{yyyyMMddHH}.%i.log</fileNamePattern>
+			<fileNamePattern>${LOG_HOME}/%d{yyyyMMdd}.%i.log</fileNamePattern>
 			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
 				<maxFileSize>100MB</maxFileSize>
 			</timeBasedFileNamingAndTriggeringPolicy>
-			<maxHistory>30</maxHistory>
+			<maxHistory>10</maxHistory>
 		</rollingPolicy>
 	</appender>
 

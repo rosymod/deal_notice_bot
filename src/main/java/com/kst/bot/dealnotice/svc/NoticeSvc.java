@@ -44,13 +44,14 @@ public class NoticeSvc {
                     StringBuilder sb = new StringBuilder();
                     sb.append(String.format(messagePrifix,member. getKeyword()));
                     List<DealInfo> dealList = crawlingSvc.getList(keywords);
-                    List<NoticeHistoryDto> historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(dealList).build());
+                    if(dealList != null && dealList.size() > 0){
+                        List<NoticeHistoryDto> historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(dealList).build());
+                        dealList.removeIf(d ->
+                            historyList.stream().anyMatch(h -> d.getTitle().indexOf(h.getContent()) >= 0)
+                        );
+                    }
 
-                    dealList.removeIf(d ->
-                        historyList.stream().anyMatch(h -> d.getTitle().indexOf(h.getContent()) >= 0)
-                    );
-
-                    if(dealList.size() > 0){
+                    if(dealList != null && dealList.size() > 0){
                         log.info("== noticeSchedule NEW DEAL Send - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), member.getKeyword());
                         messageHandler.appendTextDealList(dealList,sb);
                         messageHandler.sendMessage(member.getChatId(),sb.toString());
