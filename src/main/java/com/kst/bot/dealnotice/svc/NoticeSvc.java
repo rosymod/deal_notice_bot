@@ -2,9 +2,11 @@ package com.kst.bot.dealnotice.svc;
 
 import com.kst.bot.dealnotice.dao.MemberDao;
 import com.kst.bot.dealnotice.dao.NoticeHistoryDao;
+import com.kst.bot.dealnotice.dao.NoticeKeywordDao;
 import com.kst.bot.dealnotice.dto.DealInfo;
 import com.kst.bot.dealnotice.dto.MemberDto;
 import com.kst.bot.dealnotice.dto.NoticeHistoryDto;
+import com.kst.bot.dealnotice.dto.NoticeKeywordDto;
 import com.kst.bot.dealnotice.handler.MessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +27,9 @@ public class NoticeSvc {
     private NoticeHistoryDao noticeHistoryDao;
 
     @Inject
+    private NoticeKeywordDao noticeKeywordDao;
+
+    @Inject
     private CrawlingSvc crawlingSvc;
 
     @Inject
@@ -35,14 +40,14 @@ public class NoticeSvc {
     @Scheduled(fixedDelay = 60000)
     public void noticeSchedule(){
         log.info("== noticeSchedule START");
-        String[] keywords;
+        List<NoticeKeywordDto> keywords;
         for(MemberDto member : memberDao.getNoticeMembers()){
-            if(member.getKeyword() != null){
-                log.info("== noticeSchedule RUN - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), member.getKeyword());
+            keywords = noticeKeywordDao.getListKeyword(NoticeKeywordDto.builder().memberIdx(member.getIdx()).build());
+            if(keywords != null && keywords.size() > 0){
+                log.info("== noticeSchedule RUN - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
                 try{
-                    keywords = member.getKeyword().split(",");
                     StringBuilder sb = new StringBuilder();
-                    sb.append(String.format(messagePrifix,member. getKeyword()));
+                    //sb.append(String.format(messagePrifix,member. getKeyword()));
                     List<DealInfo> dealList = crawlingSvc.getList(keywords);
                     if(dealList != null && dealList.size() > 0){
                         List<NoticeHistoryDto> historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(dealList).build());
@@ -52,7 +57,7 @@ public class NoticeSvc {
                     }
 
                     if(dealList != null && dealList.size() > 0){
-                        log.info("== noticeSchedule NEW DEAL Send - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), member.getKeyword());
+                        log.info("== noticeSchedule NEW DEAL Send - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
                         messageHandler.appendTextDealList(dealList,sb);
                         messageHandler.sendMessage(member.getChatId(),sb.toString());
 
@@ -62,15 +67,15 @@ public class NoticeSvc {
                         }
                         noticeHistoryDao.addNoticeHistory(noticeHistoryList);
                     }else{
-                        log.info("== noticeSchedule Not exist NEW DEAL - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), member.getKeyword());
+                        log.info("== noticeSchedule Not exist NEW DEAL - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
                     }
                 }catch(Exception e){
                     log.error("noticeSchedule exception - {}",e.getMessage());
                 }
             }else{
                 log.info("== noticeSchedule NOT WORK - member {}, chatId {}", member.getLastName(), member.getChatId());
-                keywords = null;
             }
+            keywords = null;
         }
     }
 }

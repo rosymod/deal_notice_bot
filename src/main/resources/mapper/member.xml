@@ -12,9 +12,6 @@
     <update id="editMember" parameterType="com.kst.bot.dealnotice.dto.MemberDto">
         UPDATE `member`
         <set>
-            <if test="keyword != null and keyword != ''">
-                keyword=#{keyword, jdbcType=VARCHAR},
-            </if>
             <if test="langCd != null and langCd != ''">
                 lang_cd=#{langCd, jdbcType=VARCHAR},
             </if>
@@ -27,15 +24,17 @@
     </update>
 
     <select id="getMember" parameterType="com.kst.bot.dealnotice.dto.MemberDto" resultType="com.kst.bot.dealnotice.dto.MemberDto">
-        SELECT      idx, chat_id, keyword, last_name, first_name, lang_cd, insert_datetime, update_datetime
+        SELECT      idx, chat_id, last_name, first_name, lang_cd, insert_datetime, update_datetime
         FROM        `member`
         WHERE       chat_id=#{chatId,jdbcType=VARCHAR}
     </select>
 
     <select id="getNoticeMembers" resultType="com.kst.bot.dealnotice.dto.MemberDto">
-        SELECT      idx, chat_id, keyword, last_name, first_name, lang_cd, insert_datetime, update_datetime
-        FROM        `member`
+        SELECT      m.idx, m.chat_id, m.last_name, m.first_name, m.lang_cd, m.insert_datetime, m.update_datetime
+        FROM        `member` m
+        INNER JOIN	`notice_keyword` nk
+        ON			m.idx = nk.member_idx
         WHERE       use_yn='Y'
-        AND         keyword is not null
+        GROUP BY	m.idx
     </select>
 </mapper>

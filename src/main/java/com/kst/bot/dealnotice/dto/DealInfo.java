@@ -23,4 +23,6 @@ public class DealInfo {
 
     private String time;
 
+    private String matchWord;
+
 }

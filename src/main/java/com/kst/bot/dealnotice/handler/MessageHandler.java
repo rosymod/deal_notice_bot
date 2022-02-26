@@ -2,9 +2,12 @@ package com.kst.bot.dealnotice.handler;
 
 import com.kst.bot.dealnotice.dto.DealInfo;
 import com.kst.bot.dealnotice.dto.MemberDto;
+import com.kst.bot.dealnotice.dto.NoticeKeywordDto;
 import com.kst.bot.dealnotice.resource.BaseConstract;
 import com.kst.bot.dealnotice.svc.CrawlingSvc;
 import com.kst.bot.dealnotice.svc.MemberSvc;
+import com.kst.bot.dealnotice.svc.NoticeKeywordSvc;
+import com.kst.bot.dealnotice.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -17,9 +20,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -35,13 +35,16 @@ public class MessageHandler extends TelegramLongPollingBot {
     @Value("${cnf.telegram.botName}")
     private String botName;
 
-    private String[] allowCommands = new String[]{"/start","/all","/find","/listen","/listeninfo"};
+    //private String[] allowCommands = new String[]{"/start","/all","/find","/listen","/listeninfo"};
 
     @Inject
     private CrawlingSvc crawlingSvc;
 
     @Inject
     private MemberSvc memberSvc;
+
+    @Inject
+    private NoticeKeywordSvc noticeKeywordSvc;
 
     @Override
     public String getBotUsername() {
@@ -70,21 +73,11 @@ public class MessageHandler extends TelegramLongPollingBot {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(message.getChatId().toString());
 
-            boolean isSupported = false;
             if(StringUtils.hasText(message.getText()) && message.getText().indexOf("/") == 0 && message.getText().split(" ").length > 0){
-                for(String command : allowCommands){
-                    if(command.equals(message.getText().split(" ")[0])){
-                        isSupported = true;
-                        //text = processing(message.getChatId().toString(), command, message.getText().replaceAll(command,"").trim());
-                        text = processing(command, message);
-                        break;
-                    }
-                }
+                text = processing(message);
+            }else{
+                text = "잘못된 요청입니다.";
             }
-            if(!isSupported){
-                text = "잘못된 요청입니다 커맨드 정보를 확인해주세요.";
-            }
-
             sendMessage.setText(text);
             try {
                 execute(sendMessage);
@@ -95,11 +88,12 @@ public class MessageHandler extends TelegramLongPollingBot {
         }
     }
 
-    private String processing(String command, Message message){
-        log.info("processing - chatId {}, command {}", message.getChatId().toString(), command);
+    private String processing(Message message){
+        log.info("processing - chatId {}, text {}", message.getChatId().toString(), message.getText());
 
         StringBuilder sb = new StringBuilder();
         List<DealInfo> list = null;
+        String command = message.getText().split(" ")[0];
         String value = message.getText().replaceAll(command,"").trim();
         MemberDto member = memberSvc.getMember(message.getChatId().toString());
 
@@ -123,7 +117,7 @@ public class MessageHandler extends TelegramLongPollingBot {
                     sb.append(message.getFrom().getFirstName());
                     sb.append("님은 이미 등록된 사용자이며, 등록이 필요하지 않습니다.");
                 }else if(member != null || BaseConstract.NO.equals(member.getUseYn())){
-                    if(memberSvc.editMember(member.getIdx(),null,null,BaseConstract.YES)){
+                    if(memberSvc.editMember(member.getIdx(),null,BaseConstract.YES)){
                         sb.append(message.getFrom().getFirstName());
                         sb.append("님 돌아오신것을 환영합니다.");
                         sb.append("\n- 기존 설정 그대로 사용하실 수 있습니다.");
@@ -134,67 +128,105 @@ public class MessageHandler extends TelegramLongPollingBot {
                     }
                 }
                 break;
-            case "/listen":
-                if(!StringUtils.hasText(value) || value.split(",").length <= 0){
-                    sb.append("요청한 알림대상이 잘못 입력되었습니다. ");
-                    sb.append("\n입력값은 필수이며, 여러개 등록을 원할 경우 ,를 통해 구분합니다.");
-                    sb.append("\nex) 맥북,3080,젤다");
-                    sb.append("\n현재 입력값 : [ ");
-                    sb.append(value);
-                    sb.append(" ]");
-                }else{
-                    if(member == null || BaseConstract.NO.equals(member.getUseYn())){
-                        sb.append("등록되지 않은 사용자이거나 비활성화된 사용자 입니다.");
-                        sb.append("\n- 사용자 등록(/start) 진행 후 다시 시도해주세요.");
-                    }else{
-                        if(memberSvc.editMember(member.getIdx(), value,null,null)){
-                            sb.append("알림이 등록되었습니다 : ");
-                            sb.append(value);
-                        }else{
-                            sb.append("알림 등록을 실패하였습니다.");
-                            sb.append("\n- 해당 증상이 반복될 경우 관리자에게 문의 바랍니다.");
-                        }
-                    }
-                }
-                break;
-            case "/listeninfo":
+//            case "/listen":
+//                if(!StringUtils.hasText(value) || value.split(",").length <= 0){
+//                    sb.append("요청한 알림대상이 잘못 입력되었습니다. ");
+//                    sb.append("\n입력값은 필수이며, 여러개 등록을 원할 경우 ,를 통해 구분합니다.");
+//                    sb.append("\nex) 맥북,3080,젤다");
+//                    sb.append("\n현재 입력값 : [ ");
+//                    sb.append(value);
+//                    sb.append(" ]");
+//                }else{
+//                    if(member == null || BaseConstract.NO.equals(member.getUseYn())){
+//                        sb.append("등록되지 않은 사용자이거나 비활성화된 사용자 입니다.");
+//                        sb.append("\n- 사용자 등록(/start) 진행 후 다시 시도해주세요.");
+//                    }else{
+//                        if(memberSvc.editMember(member.getIdx(), value,null,null)){
+//                            sb.append("알림이 등록되었습니다 : ");
+//                            sb.append(value);
+//                        }else{
+//                            sb.append("알림 등록을 실패하였습니다.");
+//                            sb.append("\n- 해당 증상이 반복될 경우 관리자에게 문의 바랍니다.");
+//                        }
+//                    }
+//                }
+//                break;
+            case "/info":
                 if(member == null || BaseConstract.NO.equals(member.getUseYn())){
                     sb.append("등록되지 않은 사용자이거나 비활성화된 사용자 입니다.");
                     sb.append("\n- 사용자 등록(/start) 진행 후 다시 시도해주세요.");
                 }else{
                     sb.append("현재 등록된 알림은 [ ");
-                    sb.append(member.getKeyword() == null ? "" : member.getKeyword());
+                    List<NoticeKeywordDto> keywords = noticeKeywordSvc.getListKeyword(member.getIdx());
+                    for(int i=0; i<keywords.size(); i++){
+                        if(i > 0){
+                            sb.append(",");
+                        }
+                        sb.append(keywords.get(i).getKeyword());
+                    }
                     sb.append(" ] 입니다.");
+                }
+                break;
+            case "/add":
+                if(!StringUtils.hasText(value)){
+                    sb.append("알림 등록할 키워드가 잘못 입력되었습니다.");
+                }else{
+                    value = StringUtil.removeEmpty(value);
+                    sb.append("알림 키워드 [ ");
+                    sb.append(value);
+                    sb.append(" ] ");
+                    try{
+                        noticeKeywordSvc.addKeyword(member.getIdx(),value);
+                        sb.append("이(가) 등록되었습니다.");
+                    }catch(Exception e){
+                        sb.append("등록을 실패하였습니다.");
+                    }
+                }
+                break;
+            case "/remove":
+                if(!StringUtils.hasText(value)) {
+                    sb.append("알림 제거할 키워드가 잘못 입력되었습니다.");
+                }else{
+                    value = StringUtil.removeEmpty(value);
+                    sb.append("알림 키워드 [ ");
+                    sb.append(value);
+                    sb.append(" ] ");
+                    try{
+                        noticeKeywordSvc.removeKeyword(member.getIdx(),value);
+                        sb.append("이(가) 제거되었습니다.");
+                    }catch(Exception e){
+                        sb.append("제거을 실패하였습니다.");
+                    }
                 }
                 break;
             default:
                 sb.append("지원하지 않는 명령어입니다.");
                 break;
-            case "/find": //allowCommands[1]: // find
-                if(!StringUtils.hasText(value)){
-                    sb.append("검색어를 올바르게 입력해 주세요.");
-                }else{
-                    list = crawlingSvc.getList(value);
-                    if(list == null || list.size() == 0){
-                        sb.append("검색 결과가 없습니다.");
-                    }else{
-                        sb.append("========= 검색어 [ ");
-                        sb.append(value);
-                        sb.append(" ] =========");
-                        appendTextDealList(list, sb);
-                    }
-                }
-                break;
-            case "/all": //allowCommands[0]:  //all
-                list = crawlingSvc.getList();
-
-                if(list == null || list.size() == 0){
-                    sb.append("조회 결과가 없습니다.");
-                }else{
-                    sb.append("========= 전체조회 =========");
-                    appendTextDealList(list, sb);
-                }
-                break;
+//            case "/find": //allowCommands[1]: // find
+//                if(!StringUtils.hasText(value)){
+//                    sb.append("검색어를 올바르게 입력해 주세요.");
+//                }else{
+//                    list = crawlingSvc.getList(value);
+//                    if(list == null || list.size() == 0){
+//                        sb.append("검색 결과가 없습니다.");
+//                    }else{
+//                        sb.append("========= 검색어 [ ");
+//                        sb.append(value);
+//                        sb.append(" ] =========");
+//                        appendTextDealList(list, sb);
+//                    }
+//                }
+//                break;
+//            case "/all": //allowCommands[0]:  //all
+//                list = crawlingSvc.getList();
+//
+//                if(list == null || list.size() == 0){
+//                    sb.append("조회 결과가 없습니다.");
+//                }else{
+//                    sb.append("========= 전체조회 =========");
+//                    appendTextDealList(list, sb);
+//                }
+//                break;
         }
         return sb.toString();
     }
@@ -203,7 +235,7 @@ public class MessageHandler extends TelegramLongPollingBot {
         MemberDto member = memberSvc.getMember(chatId);
         if(member != null){
             try{
-                memberSvc.editMember(member.getIdx(),null,null,BaseConstract.NO);
+                memberSvc.editMember(member.getIdx(),null,BaseConstract.NO);
             }catch(Exception e){
                 log.error("exit exception - idx {}, detail {}", member.getIdx(), e.getMessage());
             }

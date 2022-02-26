@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kst.bot.dealnotice.dao.NoticeKeywordDao">
+
+    <insert id="addKeyword" parameterType="com.kst.bot.dealnotice.dto.NoticeKeywordDto">
+        INSERT INTO notice_keyword
+            (member_idx, keyword, insert_datetime)
+        VALUES(
+            #{memberIdx,jdbcType=INTEGER}, #{keyword, jdbcType=VARCHAR}, current_timestamp())
+    </insert>
+
+    <delete id="removeKeyword" parameterType="com.kst.bot.dealnotice.dto.NoticeKeywordDto">
+        DELETE FROM notice_keyword
+        WHERE       member_idx=#{memberIdx,jdbcType=INTEGER}
+        AND         keyword=#{keyword, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="getListKeyword" parameterType="com.kst.bot.dealnotice.dto.NoticeKeywordDto" resultType="com.kst.bot.dealnotice.dto.NoticeKeywordDto">
+        SELECT      member_idx, keyword, insert_datetime, update_datetime
+        FROM        notice_keyword
+        WHERE       member_idx=#{memberIdx,jdbcType=INTEGER}
+    </select>
+</mapper>

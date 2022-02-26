@@ -34,8 +34,8 @@ public class MemberSvc {
     }
 
     @Transactional
-    public boolean editMember(Integer idx, String keyword, String langCd, String useYn){
-        if(memberDao.editMember(MemberDto.builder().idx(idx).keyword(keyword).langCd(langCd).useYn(useYn).build()) <= 0){
+    public boolean editMember(Integer idx, String langCd, String useYn){
+        if(memberDao.editMember(MemberDto.builder().idx(idx).langCd(langCd).useYn(useYn).build()) <= 0){
             return false;
         }
         return true;

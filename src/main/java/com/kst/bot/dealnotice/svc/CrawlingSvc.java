@@ -1,6 +1,8 @@
 package com.kst.bot.dealnotice.svc;
 
 import com.kst.bot.dealnotice.dto.DealInfo;
+import com.kst.bot.dealnotice.dto.NoticeKeywordDto;
+import com.kst.bot.dealnotice.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,7 +16,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class CrawlingSvc {
     @Inject
     private Environment environment;
 
-    public List<DealInfo> getList(String...keyword){
+    public List<DealInfo> getList(List<NoticeKeywordDto> keywordList){
         List<DealInfo> dealList = new ArrayList<>();
         String url;
         for(String target : targets){
@@ -45,9 +46,10 @@ public class CrawlingSvc {
                 log.error("getList - exception target {}, message {}",target, e.getMessage());
             }
         }
-        if(dealList.size() > 0 && keyword != null && keyword.length > 0){
-            String matchStr = ".*(?i)"+String.join(".*|.*(?i)",keyword)+".*";// ".*a.*|.*b.*";
-            dealList = dealList.stream().filter(deal -> deal.getTitle().matches(matchStr)).collect(Collectors.toList());
+        if(dealList.size() > 0 && keywordList != null && keywordList.size() > 0){
+            String[] keywords = keywordList.stream().map(i -> i.getKeyword()).collect(Collectors.toList()).stream().toArray(String[]::new);
+            String matchStr = ".*(?i)"+String.join(".*|.*(?i)",keywords)+".*";// ".*a.*|.*b.*";
+            dealList = dealList.stream().filter(deal -> deal.getMatchWord().matches(matchStr)).collect(Collectors.toList());
         }
         return dealList;
     }
@@ -63,6 +65,7 @@ public class CrawlingSvc {
                         list.add(DealInfo.builder()
                                 .type(type)
                                 .title(element.select("p[class='tit'] a span").first().text())
+                                .matchWord(StringUtil.removeEmpty(element.select("p[class='tit'] a span").first().text()))
                                 .price(element.select("div[class='market-info-sub'] p").first().select("span span").text().replaceAll("[^0-9]", "").replaceAll("\\B(?=(\\d{3})+(?!\\d))", ","))
                                 .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
                                 .time(element.select("div[class='market-info-sub'] span[class='date']").first().text().trim())
@@ -77,6 +80,7 @@ public class CrawlingSvc {
                         list.add(DealInfo.builder()
                                 .type(type)
                                 .title(element.select("span[class='list_subject']").first().attr("title"))
+                                .matchWord(StringUtil.removeEmpty(element.select("span[class='list_subject']").first().attr("title")))
                                 .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
                                 .time(element.select("span[class='timestamp']").first().text().trim())
                                 .build());
@@ -90,6 +94,7 @@ public class CrawlingSvc {
                     list.add(DealInfo.builder()
                             .type(type)
                             .title(element.select("td[class='subject'] a[class='deco']").first().text())
+                            .matchWord(element.select("td[class='subject'] a[class='deco']").first().text())
                             .link(element.select("td[class='subject'] a[class='deco']").attr("href"))
                             .time(element.select("td[class='time']").first().text().trim())
                             .build());

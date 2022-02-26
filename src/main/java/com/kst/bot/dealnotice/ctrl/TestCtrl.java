@@ -17,6 +17,6 @@ public class TestCtrl {
 
     @GetMapping("/crawling/get")
     public Object crawlingTest(){
-        return crawlingSvc.getList();
+        return crawlingSvc.getList(null);
     }
 }
