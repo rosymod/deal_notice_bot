@@ -22,22 +22,23 @@ mybatis:
 cnf:
   telegram:
     botName: deal_notice_bot
-    apiKey:
+    apiKey: 
   crawling:
-    targets: quasarzon,clien,ruliweb
+    targets: quasarzon,clien,clien-jungo,ruliweb
     detail:
       quasarzon:
         name: 퀘이사존
         host: https://quasarzone.com
         path: /bbs/qb_tsy
-        #select-row: table tbody tr div[class='market-info-list']
       clien:
         name: 클리앙
         host: https://www.clien.net
         path: /service/board/jirum
-        #select-row: table tbody tr div[class='market-info-list']
+      clien-jungo:
+        name: 클리앙-중고
+        host: https://www.clien.net
+        path: /service/board/sold
       ruliweb:
         name: 루리웹
         host: https://bbs.ruliweb.com
         path: /market/board/1020
-        #select-row: table tbody tr div[class='market-info-list']

@@ -87,6 +87,20 @@ public class CrawlingSvc {
 //                    }
                 }
                 break;
+            case "clien-jungo":
+                elements = document.select("div[class='list_content'] div[class='list_item symph_row']");
+                for(Element element : elements){
+                    if(!"거래완료".equals(element.select("a[class='list_subject'] span").first().text())){
+                        list.add(DealInfo.builder()
+                                .type(type)
+                                .title(element.select("span[class='subject_fixed']").first().text())
+                                .matchWord(StringUtil.removeEmpty(element.select("span[class='subject_fixed']").first().text()))
+                                .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
+                                .time(element.select("span[class='timestamp']").first().text().trim())
+                                .build());
+                    }
+                }
+                break;
             case "ruliweb":
                 elements = document.select("table tbody tr");
                 for(Element element : elements){
