@@ -108,7 +108,7 @@ public class CrawlingSvc {
                     list.add(DealInfo.builder()
                             .type(type)
                             .title(element.select("td[class='subject'] a[class='deco']").first().text())
-                            .matchWord(element.select("td[class='subject'] a[class='deco']").first().text())
+                            .matchWord(StringUtil.removeSpecWord(element.select("td[class='subject'] a[class='deco']").first().text()))
                             .link(element.select("td[class='subject'] a[class='deco']").attr("href"))
                             .time(element.select("td[class='time']").first().text().trim())
                             .build());

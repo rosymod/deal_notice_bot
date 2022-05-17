@@ -44,7 +44,7 @@ public class NoticeSvc {
         for(MemberDto member : memberDao.getNoticeMembers()){
             keywords = noticeKeywordDao.getListKeyword(NoticeKeywordDto.builder().memberIdx(member.getIdx()).build());
             if(keywords != null && keywords.size() > 0){
-                log.info("== noticeSchedule RUN - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
+                log.info("== noticeSchedule RUN - member {} {}, chatId {}, keyword {}", member.getLastName(), member.getFirstName(), member.getChatId(), keywords);
                 try{
                     StringBuilder sb = new StringBuilder();
                     //sb.append(String.format(messagePrifix,member. getKeyword()));
@@ -52,28 +52,28 @@ public class NoticeSvc {
                     if(dealList != null && dealList.size() > 0){
                         List<NoticeHistoryDto> historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(dealList).build());
                         dealList.removeIf(d ->
-                            historyList.stream().anyMatch(h -> d.getTitle().indexOf(h.getContent()) >= 0)
+                            historyList.stream().anyMatch(h -> d.getMatchWord().indexOf(h.getContent()) >= 0)
                         );
                     }
 
                     if(dealList != null && dealList.size() > 0){
-                        log.info("== noticeSchedule NEW DEAL Send - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
+                        log.info("== noticeSchedule NEW DEAL Send - member {} {}, chatId {}, keyword {}", member.getLastName(), member.getFirstName(), member.getChatId(), keywords);
                         messageHandler.appendTextDealList(dealList,sb);
                         messageHandler.sendMessage(member.getChatId(),sb.toString());
 
                         List<NoticeHistoryDto> noticeHistoryList = new ArrayList<>();
                         for(DealInfo dealInfo : dealList){
-                            noticeHistoryList.add(NoticeHistoryDto.builder().memberIdx(member.getIdx()).content(dealInfo.getTitle()).build());
+                            noticeHistoryList.add(NoticeHistoryDto.builder().memberIdx(member.getIdx()).content(dealInfo.getMatchWord()).build());
                         }
                         noticeHistoryDao.addNoticeHistory(noticeHistoryList);
                     }else{
-                        log.info("== noticeSchedule Not exist NEW DEAL - member {}, chatId {}, keyword {}", member.getLastName(), member.getChatId(), keywords);
+                        log.info("== noticeSchedule Not exist NEW DEAL - member {} {}, chatId {}, keyword {}", member.getLastName(), member.getFirstName(), member.getChatId(), keywords);
                     }
                 }catch(Exception e){
                     log.error("noticeSchedule exception - {}",e.getMessage());
                 }
             }else{
-                log.info("== noticeSchedule NOT WORK - member {}, chatId {}", member.getLastName(), member.getChatId());
+                log.info("== noticeSchedule NOT WORK - member {} {}, chatId {}", member.getLastName(), member.getFirstName(), member.getChatId());
             }
             keywords = null;
         }

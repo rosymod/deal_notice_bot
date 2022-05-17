@@ -19,7 +19,7 @@
         FROM    notice_history
         WHERE   member_idx=#{memberIdx,jdbcType=INTEGER}
         AND     content in <foreach collection="includes" item="item" open="(" close=")" separator=",">
-            substring(#{item.title},1,100)
+            substring(#{item.matchWord},1,100)
         </foreach>
     </select>
 </mapper>
