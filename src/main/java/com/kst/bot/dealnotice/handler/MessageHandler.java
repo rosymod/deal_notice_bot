@@ -171,7 +171,7 @@ public class MessageHandler extends TelegramLongPollingBot {
                 if(!StringUtils.hasText(value)){
                     sb.append("알림 등록할 키워드가 잘못 입력되었습니다.");
                 }else{
-                    value = StringUtil.removeEmpty(value);
+                    value = StringUtil.removeSpecWord(value);
                     sb.append("알림 키워드 [ ");
                     sb.append(value);
                     sb.append(" ] ");
@@ -187,7 +187,7 @@ public class MessageHandler extends TelegramLongPollingBot {
                 if(!StringUtils.hasText(value)) {
                     sb.append("알림 제거할 키워드가 잘못 입력되었습니다.");
                 }else{
-                    value = StringUtil.removeEmpty(value);
+                    value = StringUtil.removeSpecWord(value);
                     sb.append("알림 키워드 [ ");
                     sb.append(value);
                     sb.append(" ] ");

@@ -65,7 +65,7 @@ public class CrawlingSvc {
                         list.add(DealInfo.builder()
                                 .type(type)
                                 .title(element.select("p[class='tit'] a span").first().text())
-                                .matchWord(StringUtil.removeEmpty(element.select("p[class='tit'] a span").first().text()))
+                                .matchWord(StringUtil.removeSpecWord(element.select("p[class='tit'] a span").first().text()))
                                 .price(element.select("div[class='market-info-sub'] p").first().select("span span").text().replaceAll("[^0-9]", "").replaceAll("\\B(?=(\\d{3})+(?!\\d))", ","))
                                 .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
                                 .time(element.select("div[class='market-info-sub'] span[class='date']").first().text().trim())
@@ -80,7 +80,7 @@ public class CrawlingSvc {
                         list.add(DealInfo.builder()
                                 .type(type)
                                 .title(element.select("span[class='list_subject']").first().attr("title"))
-                                .matchWord(StringUtil.removeEmpty(element.select("span[class='list_subject']").first().attr("title")))
+                                .matchWord(StringUtil.removeSpecWord(element.select("span[class='list_subject']").first().attr("title")))
                                 .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
                                 .time(element.select("span[class='timestamp']").first().text().trim())
                                 .build());
@@ -94,7 +94,7 @@ public class CrawlingSvc {
                         list.add(DealInfo.builder()
                                 .type(type)
                                 .title(element.select("span[class='subject_fixed']").first().text())
-                                .matchWord(StringUtil.removeEmpty(element.select("span[class='subject_fixed']").first().text()))
+                                .matchWord(StringUtil.removeSpecWord(element.select("span[class='subject_fixed']").first().text()))
                                 .link(environment.getProperty(String.format("cnf.crawling.detail.%s.host",type)) + element.select("a").attr("href"))
                                 .time(element.select("span[class='timestamp']").first().text().trim())
                                 .build());
