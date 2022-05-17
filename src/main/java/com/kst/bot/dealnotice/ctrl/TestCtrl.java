@@ -1,7 +1,6 @@
 package com.kst.bot.dealnotice.ctrl;
 
 import com.kst.bot.dealnotice.svc.CrawlingSvc;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

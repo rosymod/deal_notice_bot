@@ -3,8 +3,6 @@ package com.kst.bot.dealnotice;
 import com.kst.bot.dealnotice.util.StringUtil;
 import org.junit.jupiter.api.Test;
 
-import java.util.regex.Pattern;
-
 
 public class MatchTest {
 
