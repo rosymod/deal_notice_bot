@@ -28,6 +28,10 @@ public class CrawlingSvc {
     @Inject
     private Environment environment;
 
+    public List<DealInfo> getList(){
+        return getList(null);
+    }
+
     public List<DealInfo> getList(List<NoticeKeywordDto> keywordList){
         List<DealInfo> dealList = new ArrayList<>();
         String url;
@@ -47,9 +51,8 @@ public class CrawlingSvc {
             }
         }
         if(dealList.size() > 0 && keywordList != null && keywordList.size() > 0){
-            String[] keywords = keywordList.stream().map(i -> i.getKeyword()).collect(Collectors.toList()).stream().toArray(String[]::new);
-            String matchStr = ".*(?i)"+String.join(".*|.*(?i)",keywords)+".*";// ".*a.*|.*b.*";
-            dealList = dealList.stream().filter(deal -> deal.getMatchWord().matches(matchStr)).collect(Collectors.toList());
+            List<String> keywords = keywordList.stream().map(i -> i.getKeyword()).collect(Collectors.toList()).stream().collect(Collectors.toList());
+            dealList = dealList.stream().filter(deal -> deal.getMatchWord().matches(StringUtil.listToMatchStr(keywords))).collect(Collectors.toList());
         }
         return dealList;
     }
