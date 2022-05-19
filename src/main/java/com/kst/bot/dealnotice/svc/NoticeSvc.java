@@ -58,6 +58,7 @@ public class NoticeSvc {
         }
 
         if(isContinue){
+            dealList = dealList.stream().distinct().collect(Collectors.toList());
             for(MemberDto member : memberDao.getNoticeMembers()){
                 keywords = noticeKeywordDao.getListKeyword(NoticeKeywordDto.builder().memberIdx(member.getIdx()).build());
                 log.info("== noticeSchedule RUN - member {} {}, chatId {}, keyword {}", member.getLastName(), member.getFirstName(), member.getChatId(), keywords);
@@ -74,12 +75,18 @@ public class NoticeSvc {
                         .filter(d -> d.getMatchWord().matches(StringUtil.listToMatchStr(tmpKeyList))) // keyword 필터
                         .collect(Collectors.toList());
 
-                    List<NoticeHistoryDto> historyList =
-                        noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(memDealList).build());
-
-                    memDealList = memDealList.stream()
-                        .filter(d -> historyList.stream().anyMatch(h->d.getMatchWord().indexOf(h.getContent()) < 0)) // history 필터
-                        .collect(Collectors.toList());
+                    List<NoticeHistoryDto> historyList;
+                    log.info("== noticeSchedule After Keyword filter - member {} {}, chatId {}, deal count {}", member.getLastName(), member.getFirstName(), member.getChatId(), memDealList.size());
+                    if(memDealList.size() > 0){
+                        historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(memDealList).build());
+                        memDealList = memDealList.stream()
+                                .filter(d -> !historyList.stream().anyMatch(h->d.getMatchWord().indexOf(h.getContent()) >= 0)) // history 필터
+                                .collect(Collectors.toList());
+                    }
+                    log.info("== noticeSchedule After history filter - member {} {}, chatId {}, deal count {}", member.getLastName(), member.getFirstName(), member.getChatId(), memDealList.size());
+//                    memDealList = memDealList.stream()
+//                        .filter(d -> historyList.stream().anyMatch(h->d.getMatchWord().indexOf(h.getContent()) < 0)) // history 필터
+//                        .collect(Collectors.toList());
 
                     if(null != memDealList && memDealList.size() > 0){
                         log.info("== noticeSchedule NEW DEAL Send - member {} {}, chatId {}, keyword {}", member.getLastName(), member.getFirstName(), member.getChatId(), keywords);
