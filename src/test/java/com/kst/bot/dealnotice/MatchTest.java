@@ -19,8 +19,8 @@ public class MatchTest {
 
     @Test
     public void matchListTest(){
-        String regx = StringUtil.listToMatchStr(new ArrayList(){{add("920+123-_");}});
-        String value = "synology 920+123-_345";
+        String regx = StringUtil.listToMatchStr(new ArrayList(){{add("920+123-_-");}});
+        String value = "synology920+123-_-345";
         System.out.println(value.matches(regx));
     }
 }

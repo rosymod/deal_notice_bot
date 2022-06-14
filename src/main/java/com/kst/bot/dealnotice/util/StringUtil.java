@@ -26,14 +26,19 @@ public class StringUtil {
     }
 
     public static String listToMatchStr(List<String> list){
-        final String specWord = "[\\-\\+]";
+//        final String specWord = "[\\-\\+]";
+//        list = list.stream().map(word->{
+//            String result = word;
+//            Matcher matcher = Pattern.compile(specWord).matcher(word);
+//            while(matcher.find()){
+//                result = result.substring(0,matcher.start()) + "\\"+matcher.group() + result.substring(matcher.end(),result.length());
+//            }
+//            return result;
+//        }).collect(Collectors.toList());
         list = list.stream().map(word->{
-            String result = word;
-            Matcher matcher = Pattern.compile(specWord).matcher(word);
-            while(matcher.find()){
-                result = result.replaceAll("\\"+matcher.group(),"\\\\"+matcher.group());
-            }
-            return result;
+            word = word.replaceAll("\\+","\\\\+");
+            word = word.replaceAll("\\-","\\\\-");
+            return word;
         }).collect(Collectors.toList());
         return ".*(?i)"+String.join(".*|.*(?i)",list)+".*"; // ".*a.*|.*b.*";
     }
