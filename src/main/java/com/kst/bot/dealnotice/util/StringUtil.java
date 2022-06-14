@@ -3,6 +3,7 @@ package com.kst.bot.dealnotice.util;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -20,12 +21,20 @@ public class StringUtil {
         if(!StringUtils.hasText(value)){
             return value;
         }
-        Pattern pattern = Pattern.compile("[^0-9a-zA-Zㄱ-힣\\-_]");
+        Pattern pattern = Pattern.compile("[^0-9a-zA-Zㄱ-힣\\-\\+_]");
         return pattern.matcher(value).replaceAll("");
     }
 
     public static String listToMatchStr(List<String> list){
-        //String[] keywords = keywordList.stream().map(i -> i.getKeyword()).collect(Collectors.toList()).stream().toArray(String[]::new);
-        return ".*(?i)"+String.join(".*|.*(?i)",list)+".*";// ".*a.*|.*b.*";
+        final String specWord = "[\\-\\+]";
+        list = list.stream().map(word->{
+            String result = word;
+            Matcher matcher = Pattern.compile(specWord).matcher(word);
+            while(matcher.find()){
+                result = result.replaceAll("\\"+matcher.group(),"\\\\"+matcher.group());
+            }
+            return result;
+        }).collect(Collectors.toList());
+        return ".*(?i)"+String.join(".*|.*(?i)",list)+".*"; // ".*a.*|.*b.*";
     }
 }
