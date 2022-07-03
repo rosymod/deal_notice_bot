@@ -26,6 +26,9 @@ import java.util.List;
 @Component
 public class MessageHandler extends TelegramLongPollingBot {
 
+    @Value("${cnf.telegram.isUse}")
+    private boolean isUse;
+
     @Inject
     private Environment environment;
 
@@ -286,6 +289,11 @@ public class MessageHandler extends TelegramLongPollingBot {
     }
 
     public void sendMessage(String chatId, String text){
+        if(!isUse){
+            log.warn("telegram is use {}",isUse);
+            return;
+        }
+
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);

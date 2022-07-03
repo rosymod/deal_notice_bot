@@ -10,12 +10,14 @@ import com.kst.bot.dealnotice.dto.NoticeKeywordDto;
 import com.kst.bot.dealnotice.handler.MessageHandler;
 import com.kst.bot.dealnotice.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,7 +82,7 @@ public class NoticeSvc {
                     if(memDealList.size() > 0){
                         historyList = noticeHistoryDao.getNoticeHistoryList(NoticeHistoryDto.builder().memberIdx(member.getIdx()).includes(memDealList).build());
                         memDealList = memDealList.stream()
-                                .filter(d -> !historyList.stream().anyMatch(h->d.getMatchWord().indexOf(h.getContent()) >= 0)) // history 필터
+                                .filter(d -> !historyList.stream().anyMatch(h->d.getMatchWord().toLowerCase().indexOf(h.getContent()) >= 0)) // history 필터
                                 .collect(Collectors.toList());
                     }
                     log.info("== noticeSchedule After history filter - member {} {}, chatId {}, deal count {}", member.getLastName(), member.getFirstName(), member.getChatId(), memDealList.size());
@@ -95,7 +97,7 @@ public class NoticeSvc {
 
                         List<NoticeHistoryDto> noticeHistoryList = new ArrayList<>();
                         for(DealInfo dealInfo : memDealList){
-                            noticeHistoryList.add(NoticeHistoryDto.builder().memberIdx(member.getIdx()).content(dealInfo.getMatchWord()).build());
+                            noticeHistoryList.add(NoticeHistoryDto.builder().memberIdx(member.getIdx()).content(dealInfo.getMatchWord().toLowerCase()).build());
                         }
                         noticeHistoryDao.addNoticeHistory(noticeHistoryList);
                     }else{
